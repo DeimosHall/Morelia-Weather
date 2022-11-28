@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "991688592420",
+    "firebase_url": "https://morelia-weather-default-rtdb.firebaseio.com",
+    "project_id": "morelia-weather",
+    "storage_bucket": "morelia-weather.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991688592420:android:2e864b5b59f912f2251cb1",
+        "android_client_info": {
+          "package_name": "com.deimos.moreliaclima"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "991688592420-6ctj819ce615jscqk5tm9o6b5cmo7vau.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkqtXcT4dF75TZ-mWa3ozf3eet5Lm3uHI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "991688592420-6ctj819ce615jscqk5tm9o6b5cmo7vau.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
