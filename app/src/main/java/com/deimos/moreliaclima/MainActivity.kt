@@ -1,5 +1,7 @@
 package com.deimos.moreliaclima
 
+import android.media.MediaPlayer
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +16,6 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -22,27 +23,58 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var database: DatabaseReference
+    private lateinit var videoPlayer: MediaPlayer
+    private var currentVideoPosition: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val uri = Uri.parse("android.resource://${packageName}/${R.raw.background}")
+        binding.videoBackground.setVideoURI(uri)
+        binding.videoBackground.start()
+
         database = Firebase.database.reference
         val temperatureReference = database.child("Temperature").ref
 
         getTemperature()
 
+        binding.videoBackground.setOnPreparedListener { mp ->
+            videoPlayer = mp
+            videoPlayer.isLooping = true
+
+            if (currentVideoPosition != 0) {
+                videoPlayer.seekTo(currentVideoPosition)
+                videoPlayer.start()
+            }
+        }
         temperatureReference.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val temperature = snapshot.getValue()
-                binding.text.text = temperature.toString()
+                binding.text.text = temperature.toString() + getString(R.string.celcius_degrees)
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Log.e("DB-Errors", error.toString())
             }
         })
+    }
+
+    override fun onPause() {
+        super.onPause()
+        currentVideoPosition = videoPlayer.currentPosition
+        binding.videoBackground.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.videoBackground.start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        videoPlayer.release()
     }
 
     private fun getRetrofit(): Retrofit {
@@ -60,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                 if (call.isSuccessful) {
                     try {
                         Log.d("myAPI", "Temperature: ${city?.main?.temp}")
-                        binding.APITemperature.text = "Temperature: ${city?.main?.temp}"
+                        binding.APITemperature.text = "${city?.main?.temp}${getString(R.string.celcius_degrees)}"
                     } catch (e: Exception) {
                         Log.d("myAPI", "Error: $e")
                     }
