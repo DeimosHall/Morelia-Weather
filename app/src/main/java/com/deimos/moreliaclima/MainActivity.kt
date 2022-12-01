@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         database = Firebase.database.reference
         val temperatureReference = database.child("Temperature").ref
 
-        getTemperature()
+        setAPITemperature()
 
         binding.videoBackground.setOnPreparedListener { mp ->
             videoPlayer = mp
@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val temperature = snapshot.getValue()
                 binding.text.text = temperature.toString() + getString(R.string.celcius_degrees)
+                setAPITemperature()
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -84,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             .build()
     }
 
-    private fun getTemperature() {
+    private fun setAPITemperature() {
         CoroutineScope(Dispatchers.IO).launch {
             val call = getRetrofit().create(APIService::class.java).getTemperature("weather?q=morelia,mx&units=metric&appid=0cd02a5207e3a5a5e77554ce9bf3a2dc")
             val city = call.body()
