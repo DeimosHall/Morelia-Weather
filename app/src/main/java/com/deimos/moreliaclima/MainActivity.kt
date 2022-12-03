@@ -1,12 +1,20 @@
 package com.deimos.moreliaclima
 
 import android.media.MediaPlayer
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.getSystemService
 import com.deimos.moreliaclima.databinding.ActivityMainBinding
+import com.deimos.moreliaclima.network.MyNetwork
+import com.deimos.moreliaclima.network.MyNetworkCallbacks
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -23,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var database: DatabaseReference
+    private lateinit var myNetwork: MyNetwork
     private lateinit var videoPlayer: MediaPlayer
     private var currentVideoPosition: Int = 0
 
@@ -31,6 +40,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        myNetwork = MyNetwork(this)
+
         val uri = Uri.parse("android.resource://${packageName}/${R.raw.background}")
         binding.videoBackground.setVideoURI(uri)
         binding.videoBackground.start()
@@ -38,7 +49,11 @@ class MainActivity : AppCompatActivity() {
         database = Firebase.database.reference
         val temperatureReference = database.child("Temperature").ref
 
-        setAPITemperature()
+        if (myNetwork.isConnected()) {
+            Toast.makeText(applicationContext, "Connected", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(applicationContext, "No connected", Toast.LENGTH_SHORT).show()
+        }
 
         binding.videoBackground.setOnPreparedListener { mp ->
             videoPlayer = mp
@@ -53,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val temperature = snapshot.getValue()
                 binding.text.text = temperature.toString() + getString(R.string.celcius_degrees)
-                setAPITemperature()
+                setAPITemperature(binding.APITemperature)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -85,7 +100,7 @@ class MainActivity : AppCompatActivity() {
             .build()
     }
 
-    private fun setAPITemperature() {
+    private fun setAPITemperature(textView: TextView) {
         CoroutineScope(Dispatchers.IO).launch {
             val call = getRetrofit().create(APIService::class.java).getTemperature("weather?q=morelia,mx&units=metric&appid=0cd02a5207e3a5a5e77554ce9bf3a2dc")
             val city = call.body()
@@ -93,7 +108,7 @@ class MainActivity : AppCompatActivity() {
                 if (call.isSuccessful) {
                     try {
                         Log.d("myAPI", "Temperature: ${city?.main?.temp}")
-                        binding.APITemperature.text = "${city?.main?.temp}${getString(R.string.celcius_degrees)}"
+                        textView.text = "${city?.main?.temp}${getString(R.string.celcius_degrees)}"
                     } catch (e: Exception) {
                         Log.d("myAPI", "Error: $e")
                     }
