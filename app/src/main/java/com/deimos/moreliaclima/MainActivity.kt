@@ -9,10 +9,12 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.getSystemService
 import com.deimos.moreliaclima.databinding.ActivityMainBinding
+import com.deimos.moreliaclima.device.Device
 import com.deimos.moreliaclima.network.MyNetwork
 import com.deimos.moreliaclima.network.MyNetworkCallbacks
 import com.google.firebase.database.DataSnapshot
@@ -31,7 +33,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var database: DatabaseReference
+    private lateinit var temperatureReference: DatabaseReference
     private lateinit var myNetwork: MyNetwork
+    private lateinit var myDevice: Device
     private lateinit var videoPlayer: MediaPlayer
     private var currentVideoPosition: Int = 0
 
@@ -40,41 +44,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        myNetwork = MyNetwork(this)
-
-        val uri = Uri.parse("android.resource://${packageName}/${R.raw.background}")
-        binding.videoBackground.setVideoURI(uri)
-        binding.videoBackground.start()
-
-        database = Firebase.database.reference
-        val temperatureReference = database.child("Temperature").ref
-
-        if (myNetwork.isConnected()) {
-            Toast.makeText(applicationContext, "Connected", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(applicationContext, "No connected", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.videoBackground.setOnPreparedListener { mp ->
-            videoPlayer = mp
-            videoPlayer.isLooping = true
-
-            if (currentVideoPosition != 0) {
-                videoPlayer.seekTo(currentVideoPosition)
-                videoPlayer.start()
-            }
-        }
-        temperatureReference.addValueEventListener(object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val temperature = snapshot.getValue()
-                binding.text.text = temperature.toString() + getString(R.string.celcius_degrees)
-                setAPITemperature(binding.APITemperature)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("DB-Errors", error.toString())
-            }
-        })
+        init()
     }
 
     override fun onPause() {
@@ -91,6 +61,57 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         videoPlayer.release()
+    }
+
+    private fun init() {
+        myNetwork = MyNetwork(this)
+        myDevice = Device(this)
+
+        initVideoBackground()
+        initDatabaseListener()
+    }
+
+    private fun initVideoBackground() {
+        val uri = Uri.parse("android.resource://${packageName}/${R.raw.background}")
+        binding.videoBackground.setVideoURI(uri)
+        binding.videoBackground.start()
+        setBackgroundDimmer()
+
+        binding.videoBackground.setOnPreparedListener { mp ->
+            videoPlayer = mp
+            videoPlayer.isLooping = true
+
+            if (currentVideoPosition != 0) {
+                videoPlayer.seekTo(currentVideoPosition)
+                videoPlayer.start()
+            }
+        }
+    }
+
+    private fun initDatabaseListener() {
+        database = Firebase.database.reference
+        temperatureReference = database.child("Temperature").ref
+
+        temperatureReference.addValueEventListener(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val temperature = snapshot.getValue()
+                binding.text.text = temperature.toString() + getString(R.string.celcius_degrees)
+                setAPITemperature(binding.APITemperature)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("DB-Errors", error.toString())
+            }
+        })
+    }
+
+    // Enables or disables a background dimmer depending on the system dark mode
+    private fun setBackgroundDimmer() {
+        if (myDevice.isDarkModeEnabled()) {
+            binding.backgroundDimmer.visibility = View.VISIBLE
+        } else {
+            binding.backgroundDimmer.visibility = View.GONE
+        }
     }
 
     private fun getRetrofit(): Retrofit {
