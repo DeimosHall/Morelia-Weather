@@ -10,5 +10,9 @@
 
     <color name="dark_text">#3a3a3a</color>
     <color name="white_text">#d9d9d9</color>
-    <color name="sky">#3d90e4</color>
+    <color name="white_sky">#3d90e4</color>
+    <color name="dark_sky">#3d6490</color>
+    <color name="dark_sky_background">#803D3737</color>
+    <color name="white_card">#80FFFFFF</color>
+    <color name="dark_card">#4D1E1E1E</color>
 </resources>

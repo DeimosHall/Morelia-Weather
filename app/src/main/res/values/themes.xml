@@ -2,8 +2,8 @@
     <!-- Base application theme. -->
     <style name="Theme.MoreliaClima" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/sky</item>
+        <item name="colorPrimary">@color/teal_200</item>
+        <item name="colorPrimaryVariant">@color/white_sky</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
@@ -12,5 +12,11 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="MyCardViewStyle" parent="Theme.MaterialComponents.DayNight" >
+        <item name="cardBackgroundColor">@color/white_card</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardCornerRadius">20dp</item>
     </style>
 </resources>
