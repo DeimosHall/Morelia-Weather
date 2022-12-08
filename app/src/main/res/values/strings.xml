@@ -7,4 +7,12 @@
     <string name="sensor">Sensor DS18B20</string>
     <string name="api_name">Open Weather</string>
     <string name="api_domain">openweathermap.org</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Setting fragment -->
+    <string name="settings">Configuraciones</string>
+    <string name="temperature_units">Unidades de temperatura</string>
+    <string name="fahrenheit">Fahrenheit</string>
+    <string name="celcius">Centigrados</string>
+
 </resources>

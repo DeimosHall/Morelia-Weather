@@ -1,10 +1,7 @@
 package com.deimos.moreliaclima
 
+import android.content.Intent
 import android.media.MediaPlayer
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,11 +9,10 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.getSystemService
 import com.deimos.moreliaclima.databinding.ActivityMainBinding
 import com.deimos.moreliaclima.device.Device
+import com.deimos.moreliaclima.device.SharedPreferences
 import com.deimos.moreliaclima.network.MyNetwork
-import com.deimos.moreliaclima.network.MyNetworkCallbacks
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -38,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var myDevice: Device
     private lateinit var videoPlayer: MediaPlayer
     private var currentVideoPosition: Int = 0
+    private lateinit var prefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +42,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         init()
+
+        binding.btnSettings.setOnClickListener {
+            intent = Intent(applicationContext, SettingsActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     override fun onPause() {
@@ -56,6 +58,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         binding.videoBackground.start()
+        init()
     }
 
     override fun onDestroy() {
@@ -66,6 +69,7 @@ class MainActivity : AppCompatActivity() {
     private fun init() {
         myNetwork = MyNetwork(this)
         myDevice = Device(this)
+        prefs = SharedPreferences(applicationContext)
 
         initVideoBackground()
         initDatabaseListener()
@@ -95,7 +99,7 @@ class MainActivity : AppCompatActivity() {
         temperatureReference.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val temperature = snapshot.getValue()
-                binding.text.text = temperature.toString() + getString(R.string.celcius_degrees)
+                binding.text.text = convertTemperature(temperature.toString().toDouble())
                 setAPITemperature(binding.APITemperature)
             }
 
@@ -129,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                 if (call.isSuccessful) {
                     try {
                         Log.d("myAPI", "Temperature: ${city?.main?.temp}")
-                        textView.text = "${city?.main?.temp}${getString(R.string.celcius_degrees)}"
+                        textView.text = convertTemperature(city?.main?.temp)
                     } catch (e: Exception) {
                         Log.d("myAPI", "Error: $e")
                     }
@@ -137,6 +141,19 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(applicationContext, "Couldn't connect to the weather host", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun convertTemperature(celciusTemperature: Double?): String {
+        if (celciusTemperature != null) {
+            if (prefs.getSharedTemperatureUnit() == "celcius") {
+                return "$celciusTemperature° C"
+            } else {
+                val fahrenheitTemperature = String.format("%.2f", (celciusTemperature * 9 / 5) + 32)
+                return "$fahrenheitTemperature° F"
+            }
+        } else {
+            return "? ° C"
         }
     }
 }
