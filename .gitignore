@@ -14,6 +14,8 @@
 .cxx
 local.properties
 
+# Build releases
+release/
 
 # Gradle files
 .gradle/

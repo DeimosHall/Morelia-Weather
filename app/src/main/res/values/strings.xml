@@ -4,7 +4,7 @@
     <string name="temperature">Temperatura:</string>
     <string name="celcius_degrees">° C</string>
     <string name="location">Tecnologico Nacional de Mexico Campus Morelia</string>
-    <string name="sensor">Sensor DS18B20</string>
+    <string name="sensor">Sensor DS18B20 (Desactivado)</string>
     <string name="api_name">Open Weather</string>
     <string name="api_domain">openweathermap.org</string>
     <string name="title_activity_settings">SettingsActivity</string>
